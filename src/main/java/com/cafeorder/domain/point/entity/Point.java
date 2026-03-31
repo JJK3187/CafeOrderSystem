@@ -18,11 +18,7 @@ public class Point extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    /** 낙관적 락: 동시 충전/결제 요청 시 포인트 잔액 정합성 보장 */
-    @Version
-    private Long version;
-
+    
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "user_id", unique = true)
     private User user;
