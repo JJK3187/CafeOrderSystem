@@ -3,6 +3,7 @@ package com.cafeorder.domain.payment.controller;
 import com.cafeorder.domain.payment.dto.PaymentRequest;
 import com.cafeorder.domain.payment.dto.PaymentResponse;
 import com.cafeorder.domain.payment.service.PaymentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +19,10 @@ public class PaymentController {
     @PostMapping("/orders/{orderId}")
     public ResponseEntity<PaymentResponse> processPayment(
             @PathVariable Long orderId,
-            @RequestBody PaymentRequest request
+            @Valid @RequestBody PaymentRequest request
     ) {
-        try {
-            PaymentResponse response = paymentService.processPayment(orderId, request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (IllegalArgumentException e) {
-            throw e;
-        }
+        PaymentResponse response = paymentService.processPayment(orderId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
 

@@ -1,5 +1,6 @@
 package com.cafeorder.domain.order.service;
 
+import com.cafeorder.config.exception.ServiceException;
 import com.cafeorder.domain.menu.entity.Menu;
 import com.cafeorder.domain.menu.entity.MenuStatus;
 import com.cafeorder.domain.menu.repository.MenuRepository;
@@ -97,7 +98,7 @@ class OrderServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(menuRepository.findAllById(any())).thenReturn(List.of(soldOut));
 
-        assertThrows(IllegalArgumentException.class, () -> orderService.saveOrder(request));
+        assertThrows(ServiceException.class, () -> orderService.saveOrder(request));
     }
 }
 

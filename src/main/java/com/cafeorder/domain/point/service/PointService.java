@@ -1,5 +1,7 @@
 package com.cafeorder.domain.point.service;
 
+import com.cafeorder.config.exception.ServiceException;
+import com.cafeorder.config.exception.ErrorCode;
 import com.cafeorder.domain.point.dto.AddPointsRequest;
 import com.cafeorder.domain.point.entity.Point;
 import com.cafeorder.domain.point.entity.PointHistory;
@@ -23,7 +25,7 @@ public class PointService {
     @Transactional
     public void addPoints(Long userId, AddPointsRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
 
         Point point = pointRepository.findByUserIdWithLock(userId)
                 .orElseGet(() -> createWalletThenLock(user));
@@ -46,6 +48,6 @@ public class PointService {
         }
 
         return pointRepository.findByUserIdWithLock(user.getId())
-                .orElseThrow(() -> new IllegalStateException("포인트 지갑 생성/조회에 실패했습니다."));
+                .orElseThrow(() -> new ServiceException(ErrorCode.POINT_WALLET_INIT_FAILED));
     }
 }

@@ -1,5 +1,7 @@
 package com.cafeorder.domain.order.service;
 
+import com.cafeorder.config.exception.ServiceException;
+import com.cafeorder.config.exception.ErrorCode;
 import com.cafeorder.domain.menu.entity.Menu;
 import com.cafeorder.domain.menu.entity.MenuStatus;
 import com.cafeorder.domain.menu.repository.MenuRepository;
@@ -31,7 +33,7 @@ public class OrderService {
     @Transactional
     public CreateOrderResponse saveOrder(CreateOrderRequest request) {
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
 
         Set<Long> menuIds = request.getItems().stream()
                 .map(CreateOrderRequest.OrderLineRequest::getMenuId)
@@ -39,7 +41,7 @@ public class OrderService {
 
         List<Menu> menus = menuRepository.findAllById(menuIds);
         if (menus.size() != menuIds.size()) {
-            throw new IllegalArgumentException("존재하지 않는 메뉴가 포함되어 있습니다.");
+            throw new ServiceException(ErrorCode.MENU_NOT_FOUND);
         }
 
         Map<Long, Menu> menuById = menus.stream()
@@ -52,12 +54,13 @@ public class OrderService {
             
             // 메뉴 판매 상태 검증
             if (menu.getMenuStatus() != MenuStatus.ON_SALE) {
-                throw new IllegalArgumentException("판매 중이 아닌 메뉴는 주문할 수 없습니다.");
+                throw new ServiceException(ErrorCode.MENU_NOT_ON_SALE);
             }
             
             // 재고 검증
             if (menu.getStockQuantity() < item.getQuantity()) {
-                throw new IllegalArgumentException(
+                throw new ServiceException(
+                    ErrorCode.INSUFFICIENT_STOCK,
                     String.format("메뉴 '%s'의 재고가 부족합니다. (요청: %d, 보유: %d)",
                     menu.getName(), item.getQuantity(), menu.getStockQuantity())
                 );

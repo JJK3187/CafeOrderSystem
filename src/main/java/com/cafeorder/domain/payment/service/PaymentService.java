@@ -1,5 +1,7 @@
 package com.cafeorder.domain.payment.service;
 
+import com.cafeorder.config.exception.ServiceException;
+import com.cafeorder.config.exception.ErrorCode;
 import com.cafeorder.domain.order.entity.Order;
 import com.cafeorder.domain.order.entity.OrderStatus;
 import com.cafeorder.domain.order.repository.OrderRepository;
@@ -27,10 +29,11 @@ public class PaymentService {
 
         // 1. 주문 조회 및 유효성 검증
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ServiceException(ErrorCode.ORDER_NOT_FOUND));
 
         if (order.getOrderStatus() != OrderStatus.PENDING) {
-            throw new IllegalArgumentException(
+            throw new ServiceException(
+                    ErrorCode.INVALID_ORDER_STATUS,
                     String.format("결제 대기 상태의 주문만 결제 가능합니다. (현재 상태: %s)",
                             order.getOrderStatus())
             );
@@ -40,7 +43,8 @@ public class PaymentService {
 
         // 주문 금액과 요청 금액이 일치하는지 확인
         if (order.getTotalPrice().compareTo(request.getPaymentAmount()) != 0) {
-            throw new IllegalArgumentException(
+            throw new ServiceException(
+                    ErrorCode.INVALID_PAYMENT_AMOUNT,
                     String.format("결제 금액이 주문 금액과 일치하지 않습니다. (주문: %s, 요청: %s)",
                             order.getTotalPrice(), request.getPaymentAmount())
             );
@@ -48,11 +52,11 @@ public class PaymentService {
 
         // 2. 포인트 차감
         Point point = pointRepository.findByUserIdWithLock(user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자의 포인트를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ServiceException(ErrorCode.POINT_WALLET_NOT_FOUND));
 
         try {
             point.use(request.getPaymentAmount());
-        } catch (IllegalArgumentException e) {
+        } catch (ServiceException e) {
             // 3. 결제 실패 -> Payment 기록 (FAILED)
             Payment failedPayment = Payment.createPendingPayment(
                     order,
