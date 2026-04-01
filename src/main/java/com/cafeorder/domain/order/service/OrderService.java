@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,21 +45,26 @@ public class OrderService {
         Map<Long, Menu> menuById = menus.stream()
                 .collect(Collectors.toMap(Menu::getId, Function.identity()));
 
-        BigDecimal totalPrice = BigDecimal.ZERO;
+        Order order = Order.createEmptyOrder(user);
+
         for (CreateOrderRequest.OrderLineRequest item : request.getItems()) {
             Menu menu = menuById.get(item.getMenuId());
+            
+            // 메뉴 판매 상태 검증
             if (menu.getMenuStatus() != MenuStatus.ON_SALE) {
-                throw new IllegalArgumentException("판매 중이 아닌 메뉴는 주문할 수 없습니다. menuId=" + item.getMenuId());
+                throw new IllegalArgumentException("판매 중이 아닌 메뉴는 주문할 수 없습니다.");
             }
-            totalPrice = totalPrice.add(menu.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
-        }
+            
+            // 재고 검증
+            if (menu.getStockQuantity() < item.getQuantity()) {
+                throw new IllegalArgumentException(
+                    String.format("메뉴 '%s'의 재고가 부족합니다. (요청: %d, 보유: %d)",
+                    menu.getName(), item.getQuantity(), menu.getStockQuantity())
+                );
+            }
 
-        Order order = Order.createOrder(totalPrice, user);
-
-        for (CreateOrderRequest.OrderLineRequest item : request.getItems()) {
-            Menu menu = menuById.get(item.getMenuId());
             OrderItem orderItem = OrderItem.createOrderItem(order, menu, item.getQuantity());
-            order.addOrderItem(orderItem);
+            order.addOrderItem(orderItem); 
         }
 
         Order savedOrder = orderRepository.save(order);

@@ -37,6 +37,10 @@ public class OrderItem extends BaseEntity {
     private int quantity;
 
     public static OrderItem createOrderItem(Order order, Menu menu, int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("수량은 1개 이상이어야 합니다.");
+        }
+
         OrderItem orderItem = new OrderItem();
         orderItem.order = order;
         orderItem.menu = menu;

@@ -52,8 +52,21 @@ public class Order extends BaseEntity {
         return order;
     }
 
+    public static Order createEmptyOrder(User user) {
+        Order order = new Order();
+        order.totalPrice = BigDecimal.ZERO;
+        order.orderStatus = OrderStatus.PENDING;
+        order.user = user;
+        return order;
+    }
+
     public void addOrderItem(OrderItem orderItem) {
         this.orderItems.add(orderItem);
+        BigDecimal newTotal = this.totalPrice.add(orderItem.calculateTotalPrice());
+        if (newTotal.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalStateException("총 금액이 음수가 될 수 없습니다.");
+        }
+        this.totalPrice = newTotal;
     }
 
     /** 결제 완료 시 호출 */
