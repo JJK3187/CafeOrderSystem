@@ -74,7 +74,7 @@ class PaymentServiceTest {
     void processPayment_successReturnsCompletedResponseWithMenuIds() {
         // given
         PaymentRequest request = new PaymentRequest(BigDecimal.valueOf(8000));
-        when(orderRepository.findById(100L)).thenReturn(Optional.of(order));
+        when(orderRepository.findByIdWithLock(100L)).thenReturn(Optional.of(order));
         when(pointRepository.findByUserIdWithLock(1L)).thenReturn(Optional.of(point));
         when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> {
             Payment p = inv.getArgument(0);
@@ -100,7 +100,7 @@ class PaymentServiceTest {
         lowPoint.charge(BigDecimal.valueOf(1000));
         PaymentRequest request = new PaymentRequest(BigDecimal.valueOf(8000));
 
-        when(orderRepository.findById(100L)).thenReturn(Optional.of(order));
+        when(orderRepository.findByIdWithLock(100L)).thenReturn(Optional.of(order));
         when(pointRepository.findByUserIdWithLock(1L)).thenReturn(Optional.of(lowPoint));
         when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -116,7 +116,7 @@ class PaymentServiceTest {
     void processPayment_throwsWhenAmountMismatch() {
         // given
         PaymentRequest request = new PaymentRequest(BigDecimal.valueOf(9999));
-        when(orderRepository.findById(100L)).thenReturn(Optional.of(order));
+        when(orderRepository.findByIdWithLock(100L)).thenReturn(Optional.of(order));
 
         // when & then
         assertThatThrownBy(() -> paymentService.processPayment(100L, request))

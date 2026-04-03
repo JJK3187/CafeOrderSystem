@@ -64,7 +64,7 @@ class OrderServiceTest {
         ReflectionTestUtils.setField(request, "items", List.of(i1, i2));
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(menuRepository.findAllById(any())).thenReturn(List.of(latte, mocha));
+        when(menuRepository.findAllByIdInWithLock(any())).thenReturn(List.of(latte, mocha));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order order = invocation.getArgument(0);
             ReflectionTestUtils.setField(order, "id", 100L);
@@ -96,7 +96,7 @@ class OrderServiceTest {
         ReflectionTestUtils.setField(request, "items", List.of(item));
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(menuRepository.findAllById(any())).thenReturn(List.of(soldOut));
+        when(menuRepository.findAllByIdInWithLock(any())).thenReturn(List.of(soldOut));
 
         assertThrows(ServiceException.class, () -> orderService.saveOrder(request));
     }

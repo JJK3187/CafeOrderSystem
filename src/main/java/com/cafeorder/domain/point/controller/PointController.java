@@ -1,5 +1,6 @@
 package com.cafeorder.domain.point.controller;
 
+import com.cafeorder.config.exception.ApiResponse;
 import com.cafeorder.domain.point.dto.AddPointsRequest;
 import com.cafeorder.domain.point.service.PointService;
 import jakarta.validation.Valid;
@@ -15,11 +16,11 @@ public class PointController {
     private final PointService pointService;
 
     @PostMapping("/add")
-    public ResponseEntity<Void> addPoints(
-            @RequestParam Long memberId,
+    public ResponseEntity<ApiResponse<Void>> addPoints(
+            @RequestParam Long userId,
             @Valid @RequestBody AddPointsRequest request
     ) {
-        pointService.addPoints(memberId, request);
-        return ResponseEntity.ok().build();
+        pointService.addPoints(userId, request);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }

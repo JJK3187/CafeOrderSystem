@@ -39,7 +39,7 @@ public class OrderService {
                 .map(CreateOrderRequest.OrderLineRequest::getMenuId)
                 .collect(Collectors.toSet());
 
-        List<Menu> menus = menuRepository.findAllById(menuIds);
+        List<Menu> menus = menuRepository.findAllByIdInWithLock(menuIds);
         if (menus.size() != menuIds.size()) {
             throw new ServiceException(ErrorCode.MENU_NOT_FOUND);
         }
@@ -65,6 +65,8 @@ public class OrderService {
                     menu.getName(), item.getQuantity(), menu.getStockQuantity())
                 );
             }
+
+            menu.decreaseStock(item.getQuantity());
 
             OrderItem orderItem = OrderItem.createOrderItem(order, menu, item.getQuantity());
             order.addOrderItem(orderItem); 

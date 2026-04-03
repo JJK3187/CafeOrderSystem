@@ -1,5 +1,6 @@
 package com.cafeorder.domain.payment.controller;
 
+import com.cafeorder.config.exception.ApiResponse;
 import com.cafeorder.domain.payment.dto.PaymentRequest;
 import com.cafeorder.domain.payment.dto.PaymentResponse;
 import com.cafeorder.domain.payment.service.PaymentFacade;
@@ -17,11 +18,11 @@ public class PaymentController {
     private final PaymentFacade paymentFacade;
 
     @PostMapping("/orders/{orderId}")
-    public ResponseEntity<PaymentResponse> processPayment(
+    public ResponseEntity<ApiResponse<PaymentResponse>> processPayment(
             @PathVariable Long orderId,
             @Valid @RequestBody PaymentRequest request
     ) {
         PaymentResponse response = paymentFacade.processPayment(orderId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 }

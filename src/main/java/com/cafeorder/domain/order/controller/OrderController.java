@@ -1,5 +1,6 @@
 package com.cafeorder.domain.order.controller;
 
+import com.cafeorder.config.exception.ApiResponse;
 import com.cafeorder.domain.order.dto.CreateOrderRequest;
 import com.cafeorder.domain.order.dto.CreateOrderResponse;
 import com.cafeorder.domain.order.service.OrderService;
@@ -19,10 +20,10 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<CreateOrderResponse> createOrder(
+    public ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(
             @Valid @RequestBody CreateOrderRequest request
     ) {
         CreateOrderResponse response = orderService.saveOrder(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 }

@@ -27,9 +27,19 @@ public class PaymentService {
     @Transactional
     public PaymentResponse processPayment(Long orderId, PaymentRequest request) {
 
+        Payment existingPayment = paymentRepository.findByOrderId(orderId).orElse(null);
+        if (existingPayment != null) {
+            return PaymentResponse.from(existingPayment);
+        }
+
         // 1. 주문 조회 및 유효성 검증
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdWithLock(orderId)
                 .orElseThrow(() -> new ServiceException(ErrorCode.ORDER_NOT_FOUND));
+
+        existingPayment = paymentRepository.findByOrderId(orderId).orElse(null);
+        if (existingPayment != null) {
+            return PaymentResponse.from(existingPayment);
+        }
 
         if (order.getOrderStatus() != OrderStatus.PENDING) {
             throw new ServiceException(
