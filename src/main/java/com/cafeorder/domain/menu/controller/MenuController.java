@@ -1,6 +1,7 @@
 package com.cafeorder.domain.menu.controller;
 
 import com.cafeorder.domain.menu.dto.MenuResponse;
+import com.cafeorder.domain.menu.dto.PopularMenuResponse;
 import com.cafeorder.domain.menu.service.MenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,5 +21,10 @@ public class MenuController {
     @GetMapping
     public ResponseEntity<List<MenuResponse>> getAll() {
         return ResponseEntity.ok(menuService.getAllMenus());
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<List<PopularMenuResponse>> getPopular() {
+        return ResponseEntity.ok(menuService.getPopularMenus());
     }
 }
